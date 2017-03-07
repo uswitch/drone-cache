@@ -13,18 +13,8 @@ pipeline:
 
   latest:
     image: docker
-    repo: plugins/sftp-cache
-    tags: [ "latest", "1.0", "1" ]
+    repo: registry.usw.co/drone/cache
+    tags: [ "latest", "${DRONE_COMMIT_SHA:0:8}", "${DRONE_BRANCH}" ]
     when:
       branch: master
       event: push
-
-plugin:
-  name: Sftp Cache
-  desc: Cache and restore your build environment
-  type: cache
-  image: plugins/sftp-cache
-  labels:
-    - cache
-    - sftp
-    - ssh
