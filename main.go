@@ -50,31 +50,9 @@ func main() {
 			EnvVar: "PLUGIN_RESTORE",
 		},
 		cli.StringFlag{
-			Name:   "server",
-			Usage:  "sftp server",
-			EnvVar: "SFTP_CACHE_SERVER,PLUGIN_SERVER",
-		},
-		cli.StringFlag{
-			Name:   "path",
-			Usage:  "sftp server path",
-			EnvVar: "SFTP_CACHE_PATH,PLUGIN_PATH",
-			Value:  "/var/lib/cache/drone",
-		},
-		cli.StringFlag{
-			Name:   "username",
-			Usage:  "sftp username",
-			EnvVar: "SFTP_CACHE_USERNAME,PLUGIN_USERNAME",
-			Value:  "root",
-		},
-		cli.StringFlag{
-			Name:   "password",
-			Usage:  "sftp password",
-			EnvVar: "SFTP_CACHE_PASSWORD,PLUGIN_PASSWORD",
-		},
-		cli.StringFlag{
-			Name:   "key",
-			Usage:  "sftp private key",
-			EnvVar: "SFTP_CACHE_PRIVATE_KEY,PLUGIN_KEY",
+			Name:   "sftp",
+			Usage:  "sftp configuration",
+			EnvVar: "PLUGIN_SFTP",
 		},
 		cli.StringFlag{
 			Name:  "env-file",
@@ -95,15 +73,12 @@ func run(c *cli.Context) error {
 	plugin := Plugin{
 		Rebuild:  c.Bool("rebuild"),
 		Restore:  c.Bool("restore"),
-		Server:   c.String("server"),
-		Username: c.String("username"),
-		Password: c.String("password"),
-		Key:      c.String("key"),
 		Mount:    c.StringSlice("mount"),
-		Path:     c.String("path"),
 		Repo:     c.String("repo.name"),
 		Default:  c.String("repo.branch"),
 		Branch:   c.String("commit.branch"),
+		Path:     c.String("path"),
+		SFTP:     c.String("sftp"),
 	}
 
 	return plugin.Exec()

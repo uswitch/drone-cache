@@ -1,13 +1,14 @@
 package sftp
 
 import (
+	"encoding/json"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/drone-plugins/drone-sftp-cache/cache"
+	"github.com/uswitch/drone-cache/cache"
 
 	"github.com/pkg/sftp"
 	"golang.org/x/crypto/ssh"
@@ -111,6 +112,23 @@ func New(server, username, password, key string) (cache.Cache, error) {
 	}
 
 	return &cacher{sftp, client}, nil
+}
+
+type configuration struct {
+	Server   string
+	Username string
+	Password string `json:",omitempty"`
+	Key      string `json:",omitempty"`
+}
+
+func FromJSON(raw string) (cache.Cache, error) {
+	var config configuration
+
+	if err := json.Unmarshal([]byte(raw), &config); err != nil {
+		return nil, err
+	}
+
+	return New(config.Server, config.Username, config.Password, config.Key)
 }
 
 // CreateDirectories creates repo directories on sftp server.

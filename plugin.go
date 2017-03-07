@@ -9,31 +9,26 @@ import (
 	"time"
 
 	"github.com/Sirupsen/logrus"
-	"github.com/drone-plugins/drone-sftp-cache/cache"
-	"github.com/drone-plugins/drone-sftp-cache/cache/sftp"
+	"github.com/uswitch/drone-cache/cache"
+	"github.com/uswitch/drone-cache/cache/sftp"
 )
 
 // Plugin for caching directories to an SFTP server.
 type Plugin struct {
-	Rebuild  bool
-	Restore  bool
-	Server   string
-	Username string
-	Password string
-	Key      string
-	Mount    []string
-	Path     string
-	Repo     string
-	Branch   string
-	Default  string // default master branch
+	Rebuild bool
+	Restore bool
+	Mount   []string
+	Repo    string
+	Branch  string
+	Default string // default master branch
+	Path    string
+
+	SFTP string
 }
 
 func (p *Plugin) Exec() error {
-	sftp, err := sftp.New(
-		p.Server,
-		p.Username,
-		p.Password,
-		p.Key,
+	sftp, err := sftp.FromJSON(
+		p.SFTP,
 	)
 
 	if err != nil {
