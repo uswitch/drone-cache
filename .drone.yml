@@ -12,9 +12,8 @@ pipeline:
       - go build -ldflags "-s -w -X main.build=$DRONE_BUILD_NUMBER" -a -tags netgo
 
   latest:
-    image: docker
+    image: plugins/docker
     repo: registry.usw.co/drone/cache
-    tags: [ "latest", "${DRONE_COMMIT_SHA:0:8}", "${DRONE_BRANCH}" ]
+    tags: [ "latest", "${DRONE_COMMIT_SHA:0:8}" ]
     when:
       branch: master
-      event: push
