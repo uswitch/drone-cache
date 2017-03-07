@@ -9,6 +9,7 @@ import (
 
 	"github.com/uswitch/drone-cache/cache"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/s3/s3Manager"
@@ -17,6 +18,7 @@ import (
 type s3Cache struct {
 	client *s3.S3
 	bucket string
+	region string
 }
 
 func (c *s3Cache) List(root string) ([]os.FileInfo, error) {
@@ -61,8 +63,10 @@ func (c *s3Cache) Close() error {
 	return nil
 }
 
-func New(bucket string) (cache.Cache, error) {
-	sess, err := session.NewSession()
+func New(region, bucket string) (cache.Cache, error) {
+	sess, err := session.NewSession(&aws.Config{
+		Region: &region,
+	})
 	if err != nil {
 		return nil, err
 	}
@@ -75,6 +79,7 @@ func New(bucket string) (cache.Cache, error) {
 
 type configuration struct {
 	Bucket string
+	Region string
 }
 
 func FromJSON(raw string) (cache.Cache, error) {
@@ -84,5 +89,5 @@ func FromJSON(raw string) (cache.Cache, error) {
 		return nil, err
 	}
 
-	return New(config.Bucket)
+	return New(config.Region, config.Bucket)
 }
