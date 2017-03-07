@@ -55,6 +55,11 @@ func main() {
 			EnvVar: "PLUGIN_SFTP",
 		},
 		cli.StringFlag{
+			Name:   "s3",
+			Usage:  "s3 configuration",
+			EnvVar: "PLUGIN_S3",
+		},
+		cli.StringFlag{
 			Name:  "env-file",
 			Usage: "source env file",
 		},
@@ -79,6 +84,7 @@ func run(c *cli.Context) error {
 		Branch:   c.String("commit.branch"),
 		Path:     c.String("path"),
 		SFTP:     c.String("sftp"),
+		S3:       c.String("s3"),
 	}
 
 	return plugin.Exec()

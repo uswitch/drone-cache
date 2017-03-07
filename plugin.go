@@ -2,6 +2,7 @@ package main
 
 import (
 	"crypto/md5"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -10,6 +11,7 @@ import (
 
 	"github.com/Sirupsen/logrus"
 	"github.com/uswitch/drone-cache/cache"
+	"github.com/uswitch/drone-cache/cache/s3"
 	"github.com/uswitch/drone-cache/cache/sftp"
 )
 
@@ -24,28 +26,66 @@ type Plugin struct {
 	Path    string
 
 	SFTP string
+	S3   string
+}
+
+func oneAndOnlyOne(options []string) (int, string, error) {
+	foundIndex := -1
+	var foundValue string
+
+	for index, value := range options {
+		if value != "" {
+			if foundIndex != -1 {
+				return 0, "", errors.New("You can only configure one cache backend.")
+			} else {
+				foundIndex = index
+				foundValue = value
+			}
+		}
+	}
+
+	if foundIndex == -1 {
+		return 0, "", errors.New("No configuration for cache backend found.")
+	} else {
+		return foundIndex, foundValue, nil
+	}
 }
 
 func (p *Plugin) Exec() error {
-	sftp, err := sftp.FromJSON(
-		p.SFTP,
-	)
+
+	cacheIndex, cacheJSON, err := oneAndOnlyOne([]string{p.SFTP, p.S3})
 
 	if err != nil {
 		return err
 	}
 
-	defer sftp.(io.Closer).Close()
+	var cache cache.Cache
+	switch cacheIndex {
+	case 0:
+		cache, err = sftp.FromJSON(
+			cacheJSON,
+		)
+	case 1:
+		cache, err = s3.FromJSON(
+			cacheJSON,
+		)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	defer cache.(io.Closer).Close()
 
 	if p.Rebuild {
 		now := time.Now()
-		err = p.ProcessRebuild(sftp)
+		err = p.ProcessRebuild(cache)
 		logrus.Printf("cache built in %v", time.Since(now))
 	}
 
 	if p.Restore {
 		now := time.Now()
-		err = p.ProcessRestore(sftp)
+		err = p.ProcessRestore(cache)
 		logrus.Printf("cache restored in %v", time.Since(now))
 	}
 
